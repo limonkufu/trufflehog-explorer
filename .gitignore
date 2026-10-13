@@ -1,0 +1,10 @@
+# Publish only the viewer, its documentation, and the existing static assets.
+# Scan data, reports, local utilities, caches, and other folders stay local.
+/*
+!/.gitignore
+!/README.md
+!/index.html
+!/static/
+/static/*
+!/static/icon.png
+!/static/screenshot.png
