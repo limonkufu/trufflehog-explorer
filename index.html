@@ -2,7 +2,17 @@
 <html>
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TruffleHog Results - Improved UI/UX</title>
+  <script>
+    // Apply the theme before rendering to avoid a flash of the wrong background.
+    (() => {
+      let theme;
+      try { theme = localStorage.getItem('thTheme'); } catch (e) {}
+      document.documentElement.dataset.theme = theme === 'light' || theme === 'dark'
+        ? theme : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    })();
+  </script>
 
   <!-- FAVICON -->
   <link rel="icon" type="image/png" href="static/icon.png" />
@@ -19,6 +29,84 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
 
   <style>
+    :root {
+      color-scheme: light;
+      --text: #555;
+      --strong-text: #444;
+      --muted-text: #666;
+      --subtle-text: #777;
+      --secondary-text: #888;
+      --accent: #b56cc2;
+      --page-start: #fdf7fc;
+      --page-end: #fcf0fd;
+      --header-start: #e1a8d7;
+      --header-end: #ceb8e7;
+      --panel: #ffffffcc;
+      --panel-border: #ecdff0;
+      --divider: #f1e3f4;
+      --surface: #fff;
+      --control-border: #d8cfe0;
+      --upload-border: #e3c2d5;
+      --active-surface: #fef8ff;
+      --hover-surface: #f3e2eb;
+      --hover-text: #713d7a;
+      --inset: #fafafa;
+      --inset-border: #eee;
+      --secret-surface: #ffe4f0;
+      --secret-text: #333;
+      --pink: #f7c7db;
+      --pink-text: #5c4150;
+      --purple: #d7c3ea;
+      --purple-text: #4a375a;
+      --secondary: #eac6f2;
+      --button-accent: #aa6baa;
+      --warning: #f3d9a4;
+      --warning-text: #5c4a20;
+      --verified: #d9536f;
+      --rejected: #f9e0e9;
+      --error: #cc4b4b;
+      --verification-error: #8a6d2b;
+      --link: #713d7a;
+    }
+    :root[data-theme="dark"] {
+      color-scheme: dark;
+      --text: #ded8e6;
+      --strong-text: #f5effb;
+      --muted-text: #c0b5cd;
+      --subtle-text: #b5a8c3;
+      --secondary-text: #afa0be;
+      --accent: #dba3e6;
+      --page-start: #15121c;
+      --page-end: #201829;
+      --header-start: #3d2948;
+      --header-end: #30253f;
+      --panel: #241e2e;
+      --panel-border: #44364f;
+      --divider: #403348;
+      --surface: #302738;
+      --control-border: #655071;
+      --upload-border: #655071;
+      --active-surface: #3d2c47;
+      --hover-surface: #50355d;
+      --hover-text: #f5e6fc;
+      --inset: #2e2537;
+      --inset-border: #4b3b55;
+      --secret-surface: #432b3c;
+      --secret-text: #f3deeb;
+      --pink: #643d52;
+      --pink-text: #ffe0ee;
+      --purple: #4e3b63;
+      --purple-text: #eee0ff;
+      --secondary: #573a63;
+      --button-accent: #e2b3eb;
+      --warning: #584529;
+      --warning-text: #ffe1a6;
+      --verified: #ad354f;
+      --rejected: #47313d;
+      --error: #ffaaaa;
+      --verification-error: #edce84;
+      --link: #dcb7ff;
+    }
     /*********************************
      * GLOBAL & BASIC LAYOUT
      *********************************/
@@ -29,11 +117,11 @@
     }
     body {
       font-family: 'Poppins', sans-serif;
-      color: #555;
+      color: var(--text);
       line-height: 1.6;
       min-height: 100vh;
       /* Softer pink-to-purple background */
-      background: linear-gradient(135deg, #fdf7fc 0%, #fcf0fd 100%);
+      background: linear-gradient(135deg, var(--page-start) 0%, var(--page-end) 100%);
       display: flex;
       flex-direction: column;
     }
@@ -45,9 +133,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(45deg, #E1A8D7 0%, #CEB8E7 100%);
+      flex-wrap: wrap;
+      gap: 16px 32px;
+      background: linear-gradient(45deg, var(--header-start) 0%, var(--header-end) 100%);
       box-shadow: 0 4px 8px rgba(0,0,0,0.08);
-      padding: 1.2rem 0;
+      padding: 1.2rem 20px;
       margin-bottom: 1rem;
     }
     header img {
@@ -60,6 +150,27 @@
       letter-spacing: 1px;
       color: #fff;
       font-size: 1.5rem;
+    }
+    .header-brand {
+      display: flex;
+      align-items: center;
+    }
+    .theme-toggle {
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .theme-toggle[aria-pressed="true"] {
+      border-color: var(--accent);
+      background-color: var(--hover-surface);
+    }
+    .btn:focus-visible,
+    .file-input:focus-visible,
+    .raw-json summary:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+    a {
+      color: var(--link);
     }
 
     .layout {
@@ -80,8 +191,8 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
-      background-color: #ffffffcc;
-      border: 1px solid #ecdff0;
+      background-color: var(--panel);
+      border: 1px solid var(--panel-border);
       border-radius: 12px;
       padding: 20px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -91,7 +202,7 @@
       flex-direction: column;
       gap: 15px;
       padding: 15px 0;
-      border-bottom: 1px solid #f1e3f4;
+      border-bottom: 1px solid var(--divider);
     }
     .sidebar-section:last-child {
       border-bottom: none;
@@ -100,7 +211,7 @@
     .sidebar-section h2 {
       margin-bottom: 8px;
       font-size: 1.1rem;
-      color: #b56cc2;
+      color: var(--accent);
       position: relative;
     }
     .sidebar-section h2::after {
@@ -108,7 +219,7 @@
       display: block;
       width: 30px;
       height: 3px;
-      background: #b56cc2;
+      background: var(--accent);
       margin-top: 6px;
       border-radius: 2px;
     }
@@ -124,10 +235,10 @@
     .file-input {
       display: inline-block;
       padding: 8px 12px;
-      border: 1px solid #e3c2d5;
+      border: 1px solid var(--upload-border);
       border-radius: 4px;
       cursor: pointer;
-      background-color: #fff;
+      background-color: var(--surface);
       transition: box-shadow 0.2s ease;
     }
     .file-input:hover {
@@ -136,7 +247,7 @@
     .upload-group p {
       margin: 0;
       font-size: 0.9rem;
-      color: #666;
+      color: var(--muted-text);
     }
 
     /*********************************
@@ -151,10 +262,10 @@
 
     /* Stats Container */
     .stats-container {
-      background-color: #ffffffcc;
+      background-color: var(--panel);
       padding: 20px;
       border-radius: 12px;
-      border: 1px solid #ecdff0;
+      border: 1px solid var(--panel-border);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       transition: box-shadow 0.3s ease;
     }
@@ -162,7 +273,7 @@
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
     }
     .stats-container h2 {
-      color: #b56cc2;
+      color: var(--accent);
       font-size: 1.4rem;
       margin-bottom: 1.5rem;
     }
@@ -176,23 +287,23 @@
     .stats-detail {
       padding: 10px;
       border-radius: 0.25rem;
-      background-color: #fff;
-      border: 1px solid #f1e3f4;
+      background-color: var(--surface);
+      border: 1px solid var(--divider);
       text-align: center;
       font-size: 0.9rem;
-      color: #555;
+      color: var(--text);
     }
     .stats-detail strong {
       display: block;
       font-size: 1rem;
       margin-bottom: 0.5rem;
-      color: #444;
+      color: var(--strong-text);
     }
     .filtered-count {
       text-align: center;
       font-weight: 500;
       margin-top: 0.5rem;
-      color: #666;
+      color: var(--muted-text);
     }
 
     /* Verification bar */
@@ -203,10 +314,10 @@
     .verification-stats p {
       margin-bottom: 0.5rem;
       font-weight: 500;
-      color: #666;
+      color: var(--muted-text);
     }
     .verification-bar-container {
-      background-color: #f3e2eb;
+      background-color: var(--hover-surface);
       border-radius: 4px;
       overflow: hidden;
       height: 12px;
@@ -216,7 +327,7 @@
     }
     .verification-bar {
       /* Pink bar for verified/unverified ratio */
-      background-color: #f7c7db;
+      background-color: var(--pink);
       height: 12px;
       width: 0%;
       transition: width 0.4s ease;
@@ -226,7 +337,7 @@
     #results-container p {
       margin-top: 10px;
       font-size: 0.95rem;
-      color: #666;
+      color: var(--muted-text);
     }
 
     /*********************************
@@ -241,41 +352,82 @@
       font-weight: 500;
       margin-bottom: 5px;
       display: inline-block;
-      color: #555;
+      color: var(--text);
     }
     .info-icon {
       font-weight: bold;
       cursor: help;
       margin-left: 4px;
-      color: #888;
+      color: var(--secondary-text);
     }
     .controls-container select,
     .controls-container input[type="text"] {
       width: 100%;
       padding: 0.5rem 1rem;
-      border: 1px solid #d8cfe0;
+      border: 1px solid var(--control-border);
       border-radius: 0.25rem;
       font-size: 1rem;
       cursor: pointer;
-      background-color: #fff;
+      background-color: var(--surface);
       background-image: url('data:image/svg+xml;utf8,<svg fill="%23555" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
       background-repeat: no-repeat;
       background-position: right 1rem center;
       background-size: 16px;
       appearance: none;
       transition: box-shadow 0.2s ease, border-color 0.2s ease;
-      color: #555;
+      color: var(--text);
     }
     .controls-container select:focus,
     .controls-container input[type="text"]:focus {
       outline: none;
+      border-color: var(--accent);
       box-shadow: 0 1px 4px rgba(0,0,0,0.08);
     }
     /* Active filter highlight */
     .controls-container input[type="text"].active-filter {
-      border-color: #b56cc2;
-      background-color: #fef8ff;
+      border-color: var(--accent);
+      background-color: var(--active-surface);
       box-shadow: 0 0 0 2px rgba(181, 108, 194, 0.1);
+    }
+    .fuzzy-filter {
+      position: relative;
+    }
+    .controls-container input[role="combobox"] {
+      cursor: text;
+      padding-right: 2.5rem;
+    }
+    .filter-suggestions {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      max-height: 240px;
+      overflow-y: auto;
+      list-style: none;
+      background: var(--surface);
+      border: 1px solid var(--control-border);
+      border-radius: 0.25rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .filter-suggestions li {
+      padding: 0.5rem 1rem;
+      overflow-wrap: anywhere;
+      font-size: 0.85rem;
+    }
+    .filter-suggestions [role="option"] {
+      cursor: pointer;
+    }
+    .filter-suggestions [role="option"]:hover,
+    .filter-suggestions [aria-selected="true"] {
+      background: var(--hover-surface);
+      color: var(--hover-text);
+    }
+    .filter-hint {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.75rem;
+      color: var(--subtle-text);
     }
 
     /*********************************
@@ -302,24 +454,24 @@
     }
     /* Pink (Danger) */
     .btn-danger {
-      background-color: #f7c7db;
-      color: #5c4150; /* a darker mauve for text */
+      background-color: var(--pink);
+      color: var(--pink-text); /* a darker mauve for text */
     }
     /* White (Warning) */
     .btn-warning {
-      background-color: #fff;
-      color: #aa6baa;
-      border: 1px solid #d8cfe0;
+      background-color: var(--surface);
+      color: var(--button-accent);
+      border: 1px solid var(--control-border);
     }
     /* Purple (Info) */
     .btn-info {
-      background-color: #d7c3ea;
-      color: #4a375a;
+      background-color: var(--purple);
+      color: var(--purple-text);
     }
     /* Pinkish Purple (Secondary) */
     .btn-secondary {
-      background-color: #eac6f2;
-      color: #4a375a;
+      background-color: var(--secondary);
+      color: var(--purple-text);
     }
 
     /*********************************
@@ -334,7 +486,7 @@
     .actions-group h3 {
       margin: 0;
       font-size: 1rem;
-      color: #444;
+      color: var(--strong-text);
     }
     .buttons-group {
       display: flex;
@@ -347,12 +499,12 @@
      * RESULT CARDS
      *********************************/
     .result-container {
-      background-color: #ffffffcc;
+      background-color: var(--panel);
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
       margin-bottom: 15px;
       padding: 10px;
-      border: 1px solid #ecdff0;
+      border: 1px solid var(--panel-border);
       transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
       animation: fadeIn 0.5s ease-out forwards;
       position: relative;
@@ -366,9 +518,9 @@
     }
     .result-header {
       font-size: 1rem;
-      color: #b56cc2;
+      color: var(--accent);
       margin-bottom: 0.75rem;
-      border-bottom: 1px solid #f1e3f4;
+      border-bottom: 1px solid var(--divider);
       padding-bottom: 0.25rem;
       display: flex;
       align-items: center;
@@ -382,7 +534,7 @@
     .summary-line {
       display: none;
       font-size: 0.85rem;
-      color: #666;
+      color: var(--muted-text);
       margin-top: 6px;
     }
     .collapsed .summary-line {
@@ -399,15 +551,15 @@
     }
     .result-detail {
       word-break: break-word;
-      background-color: #fafafa;
-      border: 1px solid #eee;
+      background-color: var(--inset);
+      border: 1px solid var(--inset-border);
       border-radius: 4px;
       padding: 6px;
-      color: #555;
+      color: var(--text);
     }
     .result-detail strong {
       font-weight: 600;
-      color: #444;
+      color: var(--strong-text);
       display: block;
       margin-bottom: 3px;
       font-size: 0.85rem;
@@ -416,13 +568,13 @@
     /* Leaked Info in soft pink */
     .leaked-container {
       grid-column: 1 / -1;
-      background-color: #ffe4f0; /* soft pink highlight */
-      border: 1px solid #eee;
+      background-color: var(--secret-surface); /* soft pink highlight */
+      border: 1px solid var(--inset-border);
       border-radius: 0.25rem;
       padding: 10px;
       font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
       font-size: 0.85rem;
-      color: #333;
+      color: var(--secret-text);
       white-space: pre-wrap;
       word-break: break-all; /* Break long strings */
       overflow-wrap: break-word; /* Wrap long words */
@@ -444,14 +596,78 @@
       margin-left: 6px;
     }
     .tag-verified {
-      background-color: #f7c7db; /* pastel pink */
+      background-color: var(--verified); /* TruffleHog confirmed the secret is live */
     }
     .tag-unverified {
-      background-color: #d7c3ea; /* pastel purple */
+      background-color: var(--purple); /* pastel purple */
+      color: var(--purple-text);
+    }
+    .tag-unknown {
+      background-color: var(--warning); /* verification errored or not recorded */
+      color: var(--warning-text);
+    }
+    .tag-confirmed {
+      background-color: var(--pink); /* pastel pink */
+      color: var(--pink-text);
     }
     .tag-rejected {
-      background-color: #f9e0e9; /* lighter pinkish */
-      color: #555;
+      background-color: var(--rejected); /* lighter pinkish */
+      color: var(--text);
+    }
+
+    /*********************************
+     * METADATA SECTIONS
+     *********************************/
+    .meta-section {
+      grid-column: 1 / -1;
+      background-color: var(--inset);
+      border: 1px solid var(--inset-border);
+      border-radius: 4px;
+      padding: 6px 8px;
+    }
+    .meta-section > strong,
+    .raw-json summary {
+      font-weight: 600;
+      color: var(--strong-text);
+      display: block;
+      margin-bottom: 3px;
+    }
+    .meta-table {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 2px 14px;
+    }
+    .meta-key {
+      color: var(--secondary-text);
+    }
+    .meta-value {
+      word-break: break-word;
+      min-width: 0;
+    }
+    .json-block {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+      font-size: 0.8rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .raw-json {
+      grid-column: 1 / -1;
+      background-color: var(--inset);
+      border: 1px solid var(--inset-border);
+      border-radius: 4px;
+      padding: 6px 8px;
+    }
+    .raw-json summary {
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+    .verification-error {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--verification-error);
+      margin-top: 3px;
     }
 
     /*********************************
@@ -461,9 +677,80 @@
       margin-top: 1rem;
     }
     .error-message {
-      color: #cc4b4b;
+      color: var(--error);
       font-weight: bold;
       margin-top: 0.5rem;
+    }
+    .info-message {
+      color: var(--subtle-text);
+      margin-top: 0.5rem;
+    }
+
+    /* Flatpickr's popup is attached to the body and needs its own theme rules. */
+    [data-theme="dark"] .flatpickr-calendar,
+    [data-theme="dark"] .flatpickr-months .flatpickr-month,
+    [data-theme="dark"] .flatpickr-current-month .flatpickr-monthDropdown-months,
+    [data-theme="dark"] .flatpickr-current-month .flatpickr-monthDropdown-months option {
+      background: var(--surface);
+      color: var(--strong-text);
+    }
+    [data-theme="dark"] .flatpickr-calendar {
+      border: 1px solid var(--control-border);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    [data-theme="dark"] .flatpickr-day,
+    [data-theme="dark"] .flatpickr-weekday,
+    [data-theme="dark"] .flatpickr-current-month input.cur-year {
+      color: var(--text);
+    }
+    [data-theme="dark"] .flatpickr-day.prevMonthDay,
+    [data-theme="dark"] .flatpickr-day.nextMonthDay,
+    [data-theme="dark"] .flatpickr-day.flatpickr-disabled {
+      color: var(--secondary-text);
+      opacity: 0.6;
+    }
+    [data-theme="dark"] .flatpickr-day:hover,
+    [data-theme="dark"] .flatpickr-day:focus,
+    [data-theme="dark"] .flatpickr-day.inRange {
+      background: var(--hover-surface);
+      border-color: var(--hover-surface);
+      box-shadow: none;
+    }
+    [data-theme="dark"] .flatpickr-day.selected,
+    [data-theme="dark"] .flatpickr-day.startRange,
+    [data-theme="dark"] .flatpickr-day.endRange {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--page-start);
+    }
+    [data-theme="dark"] .flatpickr-day.today {
+      border-color: var(--accent);
+    }
+    [data-theme="dark"] .flatpickr-months .flatpickr-prev-month svg,
+    [data-theme="dark"] .flatpickr-months .flatpickr-next-month svg {
+      fill: var(--text);
+    }
+    [data-theme="dark"] .numInputWrapper span.arrowUp:after {
+      border-bottom-color: var(--text);
+    }
+    [data-theme="dark"] .numInputWrapper span.arrowDown:after {
+      border-top-color: var(--text);
+    }
+    [data-theme="dark"] .flatpickr-calendar.arrowTop:before,
+    [data-theme="dark"] .flatpickr-calendar.arrowTop:after {
+      border-bottom-color: var(--surface);
+    }
+    [data-theme="dark"] .flatpickr-calendar.arrowBottom:before,
+    [data-theme="dark"] .flatpickr-calendar.arrowBottom:after {
+      border-top-color: var(--surface);
+    }
+    [data-theme="dark"] .controls-container select,
+    [data-theme="dark"] .controls-container input[type="text"] {
+      background-image: url('data:image/svg+xml;utf8,<svg fill="%23ded8e6" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    }
+    ::placeholder {
+      color: var(--subtle-text);
+      opacity: 1;
     }
 
     /*********************************
@@ -488,8 +775,18 @@
       .main-content {
         width: 100%;
       }
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
       .result-body {
         grid-template-columns: 1fr 1fr;
+      }
+      header h1 {
+        font-size: 1.2rem;
+      }
+      header img {
+        width: 48px;
+        height: 48px;
       }
     }
   </style>
@@ -498,8 +795,13 @@
 
   <!-- Header with icon -->
   <header>
-    <img src="static/icon.png" alt="Icon" />
-    <h1>TruffleHog Explorer</h1>
+    <div class="header-brand">
+      <img src="static/icon.png" alt="Icon" />
+      <h1>TruffleHog Explorer</h1>
+    </div>
+    <button type="button" id="themeToggle" class="btn btn-warning theme-toggle" aria-pressed="false">
+      <i class="bi bi-moon-stars" aria-hidden="true"></i> Dark mode
+    </button>
   </header>
 
   <div class="layout">
@@ -510,8 +812,8 @@
       <div class="sidebar-section">
         <h2>Load Data</h2>
         <div class="upload-group">
-          <input type="file" id="trufflehogFile" accept=".json" multiple class="file-input" />
-          <p>Select one or more TruffleHog JSON (NDJSON) files</p>
+          <input type="file" id="trufflehogFile" accept=".json,.jsonl,.ndjson,.txt,.log" multiple class="file-input" />
+          <p>Select one or more TruffleHog <code>--json</code> output files (NDJSON, JSON array or <code>jq</code>-formatted)</p>
         </div>
       </div>
 
@@ -531,20 +833,32 @@
           <div>
             <label for="filterRepository">
               Filter by Repository:
-              <span class="info-icon" title="Choose a specific repository or leave as All.">?</span>
+              <span class="info-icon" title="Type to fuzzy search repository names, choose a suggestion for an exact match, or leave empty for All.">?</span>
             </label>
-            <select id="filterRepository">
-              <option value="">All</option>
-            </select>
+            <div class="fuzzy-filter">
+              <input type="text" id="filterRepository" placeholder="All repositories — type to search..."
+                role="combobox" aria-autocomplete="list" aria-expanded="false"
+                aria-controls="repositorySuggestions" aria-describedby="repositoryHint"
+                autocomplete="off" spellcheck="false" />
+              <ul id="repositorySuggestions" class="filter-suggestions" role="listbox"
+                aria-label="Repositories" hidden></ul>
+            </div>
+            <small id="repositoryHint" class="filter-hint">Match partial names or letters in order. Clear for All.</small>
           </div>
           <div>
             <label for="filterDetector">
               Filter by Detector:
-              <span class="info-icon" title="Which type of secret detector flagged the finding?">?</span>
+              <span class="info-icon" title="Type to fuzzy search detector names, choose a suggestion for an exact match, or leave empty for All.">?</span>
             </label>
-            <select id="filterDetector">
-              <option value="">All</option>
-            </select>
+            <div class="fuzzy-filter">
+              <input type="text" id="filterDetector" placeholder="All detectors — type to search..."
+                role="combobox" aria-autocomplete="list" aria-expanded="false"
+                aria-controls="detectorSuggestions" aria-describedby="detectorHint"
+                autocomplete="off" spellcheck="false" />
+              <ul id="detectorSuggestions" class="filter-suggestions" role="listbox"
+                aria-label="Detectors" hidden></ul>
+            </div>
+            <small id="detectorHint" class="filter-hint">Match partial names or letters in order. Clear for All.</small>
           </div>
           <div>
             <label for="filterFileName">
@@ -557,13 +871,25 @@
           </div>
           <div>
             <label for="filterVerified">
-              Filter by Verified:
-              <span class="info-icon" title="Show only Verified or Unverified secrets.">?</span>
+              Filter by TruffleHog Result:
+              <span class="info-icon" title="TruffleHog's own verification: Verified = the secret was confirmed live, Unknown = verification failed with an error.">?</span>
             </label>
             <select id="filterVerified">
               <option value="">All</option>
-              <option value="true">Verified</option>
-              <option value="false">Unverified</option>
+              <option value="verified">Verified</option>
+              <option value="unverified">Unverified</option>
+              <option value="unknown">Unknown</option>
+            </select>
+          </div>
+          <div>
+            <label for="filterReview">
+              Filter by Review:
+              <span class="info-icon" title="Your own triage status, set with the Confirm button.">?</span>
+            </label>
+            <select id="filterReview">
+              <option value="">All</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="unconfirmed">Not Confirmed</option>
             </select>
           </div>
 
@@ -620,9 +946,9 @@
             <button class="btn btn-danger" id="rejectAllBtn">
               <i class="bi bi-x-circle"></i> &nbspReject All Filtered
             </button>
-            <!-- Button: Mark All Filtered Verified -->
-            <button class="btn btn-secondary" id="verifyAllBtn">
-              <i class="bi bi-check-circle"></i> &nbspVerify All Filtered
+            <!-- Button: Mark All Filtered Confirmed -->
+            <button class="btn btn-secondary" id="confirmAllBtn">
+              <i class="bi bi-check-circle"></i> &nbspConfirm All Filtered
             </button>
           </div>
         </div>
@@ -646,9 +972,9 @@
         <div class="actions-group">
           <h3>Export</h3>
           <div class="buttons-group">
-            <!-- Button: Export Verified -->
-            <button class="btn btn-warning" id="exportVerifiedBtn">
-              <i class="bi bi-download"></i> &nbspExport Verified
+            <!-- Button: Export Confirmed -->
+            <button class="btn btn-warning" id="exportConfirmedBtn">
+              <i class="bi bi-download"></i> &nbspExport Confirmed
             </button>
             <!-- Button: Export Filtered -->
             <button class="btn btn-warning" id="exportFilteredBtn">
@@ -716,10 +1042,14 @@
         <!-- Verified Stats -->
         <div class="verification-stats">
           <p>
-            <strong>Verified:</strong>
+            <strong>Verified by TruffleHog:</strong>
             <span id="verifiedCount">0</span> |
             <strong>Unverified:</strong>
-            <span id="unverifiedCount">0</span>
+            <span id="unverifiedCount">0</span> |
+            <strong>Unknown:</strong>
+            <span id="unknownCount">0</span> |
+            <strong>Confirmed:</strong>
+            <span id="confirmedCount">0</span>
           </p>
           <div class="verification-bar-container">
             <div class="verification-bar" id="verificationBar"></div>
@@ -742,6 +1072,31 @@
 
   <script>
     /**************************************************************
+     * THEME PREFERENCE (saved choice, otherwise follow the system)
+     **************************************************************/
+    const themeToggle = document.getElementById('themeToggle');
+    const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
+    let themePreference = null;
+    try {
+      const storedTheme = localStorage.getItem('thTheme');
+      if (storedTheme === 'light' || storedTheme === 'dark') themePreference = storedTheme;
+    } catch (e) {}
+
+    function applyTheme(theme) {
+      document.documentElement.dataset.theme = theme;
+      themeToggle.setAttribute('aria-pressed', String(theme === 'dark'));
+    }
+    applyTheme(themePreference || (systemTheme.matches ? 'dark' : 'light'));
+    themeToggle.addEventListener('click', () => {
+      themePreference = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+      applyTheme(themePreference);
+      try { localStorage.setItem('thTheme', themePreference); } catch (e) {}
+    });
+    systemTheme.addEventListener('change', event => {
+      if (!themePreference) applyTheme(event.matches ? 'dark' : 'light');
+    });
+
+    /**************************************************************
      * Initialize Flatpickr in "range" mode
      **************************************************************/
     let selectedDateRange = [null, null];
@@ -762,8 +1117,8 @@
 
     const toggleRejectedBtn = document.getElementById('toggleRejectedBtn');
     const rejectAllBtn = document.getElementById('rejectAllBtn');
-    const verifyAllBtn = document.getElementById('verifyAllBtn');
-    const exportVerifiedBtn = document.getElementById('exportVerifiedBtn');
+    const confirmAllBtn = document.getElementById('confirmAllBtn');
+    const exportConfirmedBtn = document.getElementById('exportConfirmedBtn');
     const exportFilteredBtn = document.getElementById('exportFilteredBtn');
     const expandAllBtn = document.getElementById('expandAllBtn');
     const clearFiltersBtn = document.getElementById('clearFiltersBtn');
@@ -771,9 +1126,14 @@
 
     // Filter elements
     const filterRepository = document.getElementById('filterRepository');
+    const repositorySuggestions = document.getElementById('repositorySuggestions');
+    const repositories = new Set();
     const filterDetector = document.getElementById('filterDetector');
+    const detectorSuggestions = document.getElementById('detectorSuggestions');
+    const detectors = new Set();
     const filterFileName = document.getElementById('filterFileName');
     const filterVerified = document.getElementById('filterVerified');
+    const filterReview = document.getElementById('filterReview');
     const filterRegex = document.getElementById('filterRegex');
     const sortBy = document.getElementById('sortBy');
 
@@ -788,6 +1148,8 @@
     const verificationBar = document.getElementById('verificationBar');
     const verifiedCountSpan = document.getElementById('verifiedCount');
     const unverifiedCountSpan = document.getElementById('unverifiedCount');
+    const unknownCountSpan = document.getElementById('unknownCount');
+    const confirmedCountSpan = document.getElementById('confirmedCount');
     const rejectedCountSpan = document.getElementById('rejectedCount');
     const filteredCountDisplay = document.getElementById('filteredCountDisplay');
 
@@ -804,7 +1166,8 @@
     let currentBatchIndex = 0;
     let totalBatches = 0;
 
-    // statusesMap: { [uniqueId]: { Verified: bool, Rejected: bool } }
+    // statusesMap: { [findingFingerprint]: { Confirmed: bool, Rejected: bool } }
+    // Review status lives in Confirmed/Rejected so TruffleHog's own Verified field is never overwritten.
     let statusesMap = {};
 
     // Toggling Rejected display
@@ -835,86 +1198,254 @@
       errorLog.innerHTML = '';
       allResults = [];
       currentFilteredResults = [];
+      resetFilterOptions();
 
-      // Reset filter dropdowns
-      filterRepository.innerHTML = '<option value="">All</option>';
-      filterDetector.innerHTML = '<option value="">All</option>';
-      filterFileName.innerHTML = '<option value="">All</option>';
+      // Files are read one after another so duplicate-ID suffixes are assigned in a stable order
+      const seenIds = new Set();
+      for (const file of event.target.files) {
+        let text;
+        try {
+          text = await file.text();
+        } catch (err) {
+          logMessage(`Error reading file: ${file.name}`, true);
+          continue;
+        }
 
-      const files = event.target.files;
-      const parsePromises = [];
+        const parsed = parseFindingsText(text);
+        parsed.findings.forEach((finding) => {
+          finding._id = uniqueId(findingFingerprint(finding), seenIds);
+          finding._uploadedFile = file.name;
 
-      for (const file of files) {
-        const reader = new FileReader();
-        const promise = new Promise((resolve) => {
-          reader.onload = (e) => {
-            const text = e.target.result;
-            const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+          // Restore review status saved for this exact finding
+          const status = statusesMap[finding._id] || {};
+          finding.Confirmed = !!status.Confirmed;
+          finding.Rejected = !!status.Rejected;
 
-            const repoSet = new Set();
-            const detSet = new Set();
-            const fileSet = new Set();
-
-            lines.forEach((line, idx) => {
-              // skip lines that are not valid JSON
-              if (!line.startsWith('{') && !line.startsWith('[')) return;
-              try {
-                const parsed = JSON.parse(line);
-
-                // Create a short unique ID
-                const shortId = 'id' + Math.random().toString(36).substr(2, 6);
-
-                // Restore Verified/Rejected status if it exists
-                const oldStatus = statusesMap[shortId] || { Verified: false, Rejected: false };
-                parsed.Verified = oldStatus.Verified;
-                parsed.Rejected = oldStatus.Rejected;
-
-                parsed._id = shortId;
-                parsed._uploadedFile = file.name;
-                allResults.push(parsed);
-
-                // Track possible filter values
-                const repo = getNestedValue(parsed, 'SourceMetadata.Data.Github.repository');
-                if (repo) repoSet.add(repo);
-
-                const det = parsed.DetectorName;
-                if (det) detSet.add(det);
-
-                fileSet.add(file.name);
-
-              } catch (err) {
-                console.error(`Error parsing JSON in ${file.name} at line ${idx + 1}:`, err);
-                const errDiv = document.createElement('div');
-                errDiv.classList.add('error-message');
-                errDiv.textContent = `Error parsing JSON line ${idx + 1} in ${file.name}: ${err.message}`;
-                errorLog.appendChild(errDiv);
-              }
-            });
-
-            // Update dropdowns
-            repoSet.forEach(r => addOptionIfNotExists(filterRepository, r));
-            detSet.forEach(d => addOptionIfNotExists(filterDetector, d));
-            fileSet.forEach(f => addOptionIfNotExists(filterFileName, f));
-
-            resolve();
-          };
-          reader.onerror = () => {
-            const errDiv = document.createElement('div');
-            errDiv.classList.add('error-message');
-            errDiv.textContent = `Error reading file: ${file.name}`;
-            errorLog.appendChild(errDiv);
-            resolve();
-          };
-          reader.readAsText(file);
+          addResult(finding);
         });
-        parsePromises.push(promise);
+        reportParseResult(file.name, parsed);
       }
 
-      Promise.all(parsePromises).then(() => {
-        updateStats();
-        applyFilters();
-      });
+      updateStats();
+      applyFilters();
     });
+
+    /**************************************************************
+     * PARSING
+     * TruffleHog --json writes one JSON object per line (NDJSON).
+     * We also accept a JSON array, objects pretty-printed by `jq .`,
+     * and files with stderr log lines / banners mixed in.
+     **************************************************************/
+    function parseFindingsText(text) {
+      text = text.replace(/^\uFEFF/, '');
+
+      let values;
+      let errors = [];
+      let skippedLines = 0;
+      try {
+        // A single JSON document: an array of findings or one finding
+        const doc = JSON.parse(text);
+        values = Array.isArray(doc) ? doc : [doc];
+      } catch (e) {
+        ({ values, errors, skippedLines } = extractJsonObjects(text));
+      }
+
+      const findings = [];
+      let nonFindings = 0;
+      values.forEach(v => (isFinding(v) ? findings.push(v) : nonFindings++));
+      return { findings, nonFindings, skippedLines, errors };
+    }
+
+    // TruffleHog log records ({"level":..,"logger":..,"msg":..}) and other JSON are not findings
+    function isFinding(value) {
+      return !!value && typeof value === 'object' && !Array.isArray(value) &&
+        ('SourceMetadata' in value || 'DetectorName' in value || 'DetectorType' in value);
+    }
+
+    function extractJsonObjects(text) {
+      const values = [];
+      const errors = [];
+      let skippedLines = 0;
+      let i = 0;
+
+      while (i < text.length) {
+        const ch = text[i];
+        let eol = text.indexOf('\n', i);
+        if (eol === -1) eol = text.length;
+
+        if (ch === '{') {
+          // Fast path: the rest of the line is one complete object (NDJSON)
+          try {
+            values.push(JSON.parse(text.slice(i, eol)));
+            i = eol;
+            continue;
+          } catch (e) { /* spans several lines or is malformed */ }
+
+          const end = findObjectEnd(text, i);
+          if (end === -1) {
+            errors.push({ offset: i, message: 'Incomplete JSON object (truncated output?)' });
+            i = eol;
+            continue;
+          }
+          try {
+            values.push(JSON.parse(text.slice(i, end + 1)));
+          } catch (e) {
+            errors.push({ offset: i, message: e.message });
+          }
+          i = end + 1;
+        } else if (/\s|,/.test(ch)) {
+          i++;
+        } else {
+          // Non-JSON text such as the TruffleHog banner or plain-text logs
+          if (ch !== '[' && ch !== ']') skippedLines++;
+          i = eol;
+        }
+      }
+
+      errors.forEach(err => { err.line = lineNumberAt(text, err.offset); });
+      return { values, errors, skippedLines };
+    }
+
+    // Index of the brace that closes the object opening at `start`, or -1 when the object is
+    // unterminated (a string runs past the end of a line, or a new top-level object starts first).
+    function findObjectEnd(text, start) {
+      let depth = 0;
+      let inString = false;
+      for (let j = start; j < text.length; j++) {
+        const c = text[j];
+        if (inString) {
+          if (c === '\\') j++;
+          else if (c === '"') inString = false;
+          else if (c === '\n') return -1;
+        } else if (c === '"') {
+          inString = true;
+        } else if (c === '{' || c === '[') {
+          depth++;
+        } else if (c === '}' || c === ']') {
+          if (--depth === 0) return j;
+        } else if (c === '\n' && text[j + 1] === '{') {
+          return -1;
+        }
+      }
+      return -1;
+    }
+
+    function lineNumberAt(text, offset) {
+      let line = 1;
+      for (let k = text.indexOf('\n'); k !== -1 && k < offset; k = text.indexOf('\n', k + 1)) line++;
+      return line;
+    }
+
+    function reportParseResult(fileName, parsed) {
+      const maxErrors = 20;
+      parsed.errors.slice(0, maxErrors).forEach(err => {
+        logMessage(`Error parsing JSON at line ${err.line} in ${fileName}: ${err.message}`, true);
+      });
+      if (parsed.errors.length > maxErrors) {
+        logMessage(`...and ${parsed.errors.length - maxErrors} more parse errors in ${fileName}`, true);
+      }
+
+      let summary = `${fileName}: loaded ${parsed.findings.length} findings`;
+      const ignored = parsed.nonFindings + parsed.skippedLines;
+      if (ignored) summary += `, ignored ${ignored} non-finding entries (log lines, banners)`;
+      logMessage(summary, false);
+    }
+
+    function logMessage(text, isError) {
+      const div = document.createElement('div');
+      div.classList.add(isError ? 'error-message' : 'info-message');
+      div.textContent = text;
+      errorLog.appendChild(div);
+    }
+
+    /**************************************************************
+     * FINDING IDS
+     * IDs are derived from the finding itself so review statuses
+     * survive reloading the same (or a re-run) TruffleHog output.
+     **************************************************************/
+    function findingFingerprint(r) {
+      const meta = getMeta(r);
+      const key = JSON.stringify([
+        r.DetectorType, r.DetectorName, r.DecoderName, r.Raw, r.RawV2, meta.sourceType, meta.source
+      ]);
+      return 'id' + cyrb53(key).toString(36);
+    }
+
+    function uniqueId(baseId, seenIds) {
+      let id = baseId;
+      for (let n = 2; seenIds.has(id); n++) id = `${baseId}-${n}`;
+      seenIds.add(id);
+      return id;
+    }
+
+    // Small, fast 53-bit string hash (cyrb53)
+    function cyrb53(str, seed = 0) {
+      let h1 = 0xdeadbeef ^ seed;
+      let h2 = 0x41c6ce57 ^ seed;
+      for (let i = 0; i < str.length; i++) {
+        const ch = str.charCodeAt(i);
+        h1 = Math.imul(h1 ^ ch, 2654435761);
+        h2 = Math.imul(h2 ^ ch, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return 4294967296 * (2097151 & h2) + (h1 >>> 0);
+    }
+
+    /**************************************************************
+     * SOURCE METADATA
+     * SourceMetadata.Data holds exactly one key naming the source
+     * (Github, Gitlab, Git, Filesystem, Docker, S3, ...), each with
+     * its own field names. Normalize the common ones.
+     **************************************************************/
+    const META_FIELD_KEYS = {
+      repository: ['repository', 'repo', 'project', 'project_name', 'image', 'bucket',
+                   'workspace_name', 'collection_name', 'channel_name', 'space', 'index', 'hostname'],
+      file: ['file', 'filename', 'path', 'page'],
+      line: ['line'],
+      commit: ['commit'],
+      email: ['email', 'username', 'user', 'user_id'],
+      timestamp: ['timestamp', 'created_at', 'updated_at', 'date'],
+      link: ['link', 'url'],
+    };
+    const metaCache = new WeakMap();
+
+    function getMeta(r) {
+      let meta = metaCache.get(r);
+      if (meta) return meta;
+
+      const data = (r.SourceMetadata && r.SourceMetadata.Data) || {};
+      const sourceType = Object.keys(data)[0] || '';
+      const source = (data[sourceType] && typeof data[sourceType] === 'object') ? data[sourceType] : {};
+
+      meta = { sourceType, source, usedKeys: new Set() };
+      for (const [field, keys] of Object.entries(META_FIELD_KEYS)) {
+        const key = keys.find(k => source[k] !== undefined && source[k] !== null && source[k] !== '');
+        meta[field] = key ? String(source[key]) : '';
+        if (key) meta.usedKeys.add(key);
+      }
+      const time = meta.timestamp ? new Date(meta.timestamp).getTime() : NaN;
+      meta.time = isNaN(time) ? null : time;
+
+      metaCache.set(r, meta);
+      return meta;
+    }
+
+    function addResult(item) {
+      allResults.push(item);
+      const meta = getMeta(item);
+      if (meta.repository) repositories.add(meta.repository);
+      if (item.DetectorName) detectors.add(String(item.DetectorName));
+      if (item._uploadedFile) addOptionIfNotExists(filterFileName, item._uploadedFile);
+    }
+
+    function resetFilterOptions() {
+      repositories.clear();
+      detectors.clear();
+      repositoryFilter.reset();
+      detectorFilter.reset();
+      filterFileName.innerHTML = '<option value="">All</option>';
+    }
 
     /**************************************************************
      * NEW CODE: LOAD SESSION FILE
@@ -937,33 +1468,25 @@
           currentFilteredResults = [];
           resultsContainer.innerHTML = '';
           errorLog.innerHTML = '';
-
-          // Reset filter dropdowns
-          filterRepository.innerHTML = '<option value="">All</option>';
-          filterDetector.innerHTML = '<option value="">All</option>';
-          filterFileName.innerHTML = '<option value="">All</option>';
+          resetFilterOptions();
 
           // Rebuild local data + statuses
+          const seenIds = new Set();
           data.forEach((item) => {
-            if (!item._id) {
-              // If somehow missing an ID, generate one
-              item._id = 'id' + Math.random().toString(36).substr(2, 6);
+            if (!item || typeof item !== 'object') return;
+            if (!('Confirmed' in item)) {
+              // Older sessions stored the review flag in Verified, overwriting TruffleHog's result
+              item.Confirmed = !!item.Verified;
+              delete item.Verified;
             }
+            item._id = uniqueId(item._id || findingFingerprint(item), seenIds);
+            item.Confirmed = !!item.Confirmed;
+            item.Rejected = !!item.Rejected;
             statusesMap[item._id] = {
-              Verified: !!item.Verified,
-              Rejected: !!item.Rejected
+              Confirmed: item.Confirmed,
+              Rejected: item.Rejected
             };
-            allResults.push(item);
-
-            // Add filter options
-            const repo = getNestedValue(item, 'SourceMetadata.Data.Github.repository');
-            if (repo) addOptionIfNotExists(filterRepository, repo);
-
-            const det = item.DetectorName;
-            if (det) addOptionIfNotExists(filterDetector, det);
-
-            const fName = item._uploadedFile;
-            if (fName) addOptionIfNotExists(filterFileName, fName);
+            addResult(item);
           });
 
           // Store statuses in localStorage
@@ -1011,9 +1534,7 @@
     function updateStats() {
       totalFindingsSpan.textContent = allResults.length;
 
-      const repos = new Set(
-        allResults.map(r => getNestedValue(r, 'SourceMetadata.Data.Github.repository')).filter(Boolean)
-      );
+      const repos = new Set(allResults.map(r => getMeta(r).repository).filter(Boolean));
       uniqueRepositoriesSpan.textContent = repos.size;
 
       const dets = new Set(allResults.map(r => r.DetectorName).filter(Boolean));
@@ -1022,18 +1543,14 @@
       const files = new Set(allResults.map(r => r._uploadedFile).filter(Boolean));
       uniqueFilesSpan.textContent = files.size;
 
-      const authors = new Set(
-        allResults.map(r => getNestedValue(r, 'SourceMetadata.Data.Github.email')).filter(Boolean)
-      );
+      const authors = new Set(allResults.map(r => getMeta(r).email).filter(Boolean));
       uniqueAuthorsSpan.textContent = authors.size;
 
-      const timestamps = allResults
-        .map(r => getNestedValue(r, 'SourceMetadata.Data.Github.timestamp'))
-        .map(ts => ts ? new Date(ts).getTime() : null)
-        .filter(x => x && !isNaN(x));
+      // reduce instead of Math.min(...arr), which overflows the stack on very large inputs
+      const timestamps = allResults.map(r => getMeta(r).time).filter(t => t !== null);
       if (timestamps.length) {
-        const min = Math.min(...timestamps);
-        const max = Math.max(...timestamps);
+        const min = timestamps.reduce((a, b) => Math.min(a, b));
+        const max = timestamps.reduce((a, b) => Math.max(a, b));
         firstSeenSpan.textContent = new Date(min).toLocaleDateString();
         lastSeenSpan.textContent = new Date(max).toLocaleDateString();
       } else {
@@ -1041,10 +1558,12 @@
         lastSeenSpan.textContent = 'N/A';
       }
 
-      const verifiedCount = allResults.filter(r => r.Verified).length;
-      const unverifiedCount = allResults.filter(r => !r.Verified).length;
+      const verifiedCount = allResults.filter(r => verificationState(r) === 'verified').length;
+      const unverifiedCount = allResults.filter(r => verificationState(r) === 'unverified').length;
       verifiedCountSpan.textContent = verifiedCount;
       unverifiedCountSpan.textContent = unverifiedCount;
+      unknownCountSpan.textContent = allResults.length - verifiedCount - unverifiedCount;
+      confirmedCountSpan.textContent = allResults.filter(r => r.Confirmed).length;
 
       const rejectedCount = allResults.filter(r => r.Rejected).length;
       rejectedCountSpan.textContent = rejectedCount;
@@ -1061,9 +1580,149 @@
     /**************************************************************
      * FILTER & SORT & RENDER
      **************************************************************/
-    [
-      filterRepository, filterDetector, filterFileName, filterVerified, sortBy
-    ].forEach(el => el.addEventListener('change', applyFilters));
+    // Prefer contiguous matches, then accept nonconsecutive letters in order.
+    // Whitespace-separated terms can match different parts of a name.
+    function fuzzyMatchScore(value, query) {
+      const name = value.toLowerCase();
+      // Fuzzy letters should match the repository path, not a shared URL host.
+      const path = name.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/]+\/?/, '');
+      const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      let score = 0;
+      for (const term of terms) {
+        const substringIndex = name.indexOf(term);
+        if (substringIndex !== -1) {
+          score += substringIndex;
+          continue;
+        }
+        let position = -1;
+        let first = -1;
+        for (const char of term) {
+          position = path.indexOf(char, position + 1);
+          if (position === -1) return Infinity;
+          if (first === -1) first = position;
+        }
+        score += 1000 + first + (position - first + 1 - term.length);
+      }
+      return score;
+    }
+
+    // Both editable filters share suggestion, keyboard, and exact-selection behavior.
+    function createFuzzyFilter(input, suggestions, values, label) {
+      let selectedValue = '';
+      let activeOption = -1;
+
+      function matchingValues(query) {
+        return Array.from(values, value => ({ value, score: fuzzyMatchScore(value, query) }))
+          .filter(match => Number.isFinite(match.score))
+          .sort((a, b) => a.score - b.score || a.value.localeCompare(b.value));
+      }
+
+      function close() {
+        suggestions.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+        input.removeAttribute('aria-activedescendant');
+        activeOption = -1;
+      }
+
+      function show() {
+        const query = input.value.trim();
+        const matches = matchingValues(query);
+        suggestions.replaceChildren();
+        activeOption = -1;
+        input.removeAttribute('aria-activedescendant');
+        const choices = query ? matches : [{ value: '' }, ...matches];
+        choices.forEach(({ value }, index) => {
+          const option = document.createElement('li');
+          option.id = `${input.id}-option-${index}`;
+          option.setAttribute('role', 'option');
+          option.setAttribute('aria-selected', 'false');
+          option.dataset.value = value;
+          option.textContent = value || `All ${label}`;
+          suggestions.appendChild(option);
+        });
+        if (!choices.length) {
+          const empty = document.createElement('li');
+          empty.setAttribute('role', 'presentation');
+          empty.textContent = `No matching ${label}`;
+          suggestions.appendChild(empty);
+        }
+        suggestions.hidden = false;
+        input.setAttribute('aria-expanded', 'true');
+      }
+
+      function select(option) {
+        selectedValue = option.dataset.value;
+        input.value = selectedValue;
+        close();
+        applyFilters();
+      }
+
+      input.addEventListener('input', () => {
+        selectedValue = '';
+        show();
+        applyFilters();
+      });
+      input.addEventListener('focus', show);
+      input.addEventListener('click', () => {
+        if (suggestions.hidden) show();
+      });
+      input.addEventListener('blur', close);
+      input.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          close();
+        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          if (suggestions.hidden) show();
+          const options = suggestions.querySelectorAll('[role="option"]');
+          if (!options.length) return;
+          const direction = event.key === 'ArrowDown' ? 1 : -1;
+          activeOption = activeOption === -1
+            ? (direction === 1 ? 0 : options.length - 1)
+            : (activeOption + direction + options.length) % options.length;
+          options.forEach((option, index) => {
+            option.setAttribute('aria-selected', String(index === activeOption));
+          });
+          const active = options[activeOption];
+          input.setAttribute('aria-activedescendant', active.id);
+          active.scrollIntoView({ block: 'nearest' });
+        } else if (event.key === 'Enter') {
+          event.preventDefault();
+          const active = suggestions.querySelector('[aria-selected="true"]');
+          if (!suggestions.hidden && active) select(active);
+          else close();
+        }
+      });
+      // Keep input focus while clicking an option so blur does not close it first.
+      suggestions.addEventListener('mousedown', event => {
+        if (event.target.closest('[role="option"]')) event.preventDefault();
+      });
+      suggestions.addEventListener('click', event => {
+        const option = event.target.closest('[role="option"]');
+        if (option) select(option);
+      });
+
+      return {
+        reset() {
+          input.value = '';
+          selectedValue = '';
+          input.classList.remove('active-filter');
+          close();
+          suggestions.replaceChildren();
+        },
+        matchedValues() {
+          const query = input.value.trim();
+          input.classList.toggle('active-filter', !!query);
+          if (!query) return null;
+          return new Set(selectedValue ? [selectedValue] : matchingValues(query).map(match => match.value));
+        }
+      };
+    }
+
+    const repositoryFilter = createFuzzyFilter(filterRepository, repositorySuggestions, repositories, 'repositories');
+    const detectorFilter = createFuzzyFilter(filterDetector, detectorSuggestions, detectors, 'detectors');
+    [filterFileName, filterVerified, filterReview, sortBy]
+      .forEach(el => el.addEventListener('change', applyFilters));
 
     // Add regex filter with debouncing and visual feedback
     let regexTimeout;
@@ -1081,10 +1740,11 @@
     });
 
     function applyFilters() {
-      const repoVal = filterRepository.value;
-      const detVal = filterDetector.value;
+      const matchingRepos = repositoryFilter.matchedValues();
+      const matchingDetectors = detectorFilter.matchedValues();
       const fileVal = filterFileName.value;
       const verVal = filterVerified.value;
+      const reviewVal = filterReview.value;
       const regexVal = filterRegex.value.trim();
 
       // Compile regex if provided
@@ -1107,41 +1767,41 @@
           startTime = endTime;
           endTime = tmp;
         }
+        // The picker returns midnight; include the whole end day
+        endTime += 24 * 60 * 60 * 1000 - 1;
       }
 
       const filtered = allResults.filter(r => {
         // Hide rejected if toggled
         if (hideRejected && r.Rejected) return false;
 
-        let verifiedMatch = true;
-        if (verVal === 'true') verifiedMatch = (r.Verified === true);
-        if (verVal === 'false') verifiedMatch = (r.Verified === false);
+        const meta = getMeta(r);
+        const verifiedMatch = !verVal || verificationState(r) === verVal;
+        const reviewMatch = !reviewVal || (reviewVal === 'confirmed') === !!r.Confirmed;
 
-        const repoMatch = !repoVal || (getNestedValue(r, 'SourceMetadata.Data.Github.repository') === repoVal);
-        const detMatch = !detVal || (r.DetectorName === detVal);
+        const repoMatch = !matchingRepos || matchingRepos.has(meta.repository);
+        const detMatch = !matchingDetectors || matchingDetectors.has(String(r.DetectorName || ''));
         const fileMatch = !fileVal || (r._uploadedFile === fileVal);
 
-        const tsStr = getNestedValue(r, 'SourceMetadata.Data.Github.timestamp');
-        const tsMs = tsStr ? new Date(tsStr).getTime() : null;
-        const dateMatch = (!startTime || (tsMs && tsMs >= startTime)) &&
-                          (!endTime || (tsMs && tsMs <= endTime));
+        const tsMs = meta.time;
+        const dateMatch = (!startTime || (tsMs !== null && tsMs >= startTime)) &&
+                          (!endTime || (tsMs !== null && tsMs <= endTime));
 
-        // Regex match on Raw field
-        const regexMatch = !regexPattern || (r.Raw && regexPattern.test(r.Raw));
+        // Regex match on the secret (RawV2 holds the full credential for multi-part secrets)
+        const regexMatch = !regexPattern ||
+          [r.Raw, r.RawV2].some(v => typeof v === 'string' && regexPattern.test(v));
 
-        return verifiedMatch && repoMatch && detMatch && fileMatch && dateMatch && regexMatch;
+        return verifiedMatch && reviewMatch && repoMatch && detMatch && fileMatch && dateMatch && regexMatch;
       });
 
       // Sort results
       const sortValue = sortBy.value;
       if (sortValue) {
+        const isVerified = (item) => (verificationState(item) === 'verified' ? 1 : 0);
         filtered.sort((a, b) => {
-          const getTime = (item) => {
-            const t = getNestedValue(item, 'SourceMetadata.Data.Github.timestamp');
-            return t ? new Date(t).getTime() : 0;
-          };
-          const repoA = getNestedValue(a, 'SourceMetadata.Data.Github.repository') || '';
-          const repoB = getNestedValue(b, 'SourceMetadata.Data.Github.repository') || '';
+          const getTime = (item) => getMeta(item).time || 0;
+          const repoA = getMeta(a).repository;
+          const repoB = getMeta(b).repository;
 
           switch (sortValue) {
             case 'dateAsc':    return getTime(a) - getTime(b);
@@ -1150,10 +1810,10 @@
             case 'repoDesc':   return repoB.localeCompare(repoA);
             case 'verifiedAsc':
               // move verified to top => so the 'lowest' is unverified
-              return (b.Verified ? 1 : 0) - (a.Verified ? 1 : 0);
+              return isVerified(b) - isVerified(a);
             case 'verifiedDesc':
               // move unverified to top => so the 'lowest' is verified
-              return (a.Verified ? 1 : 0) - (b.Verified ? 1 : 0);
+              return isVerified(a) - isVerified(b);
             default:
               return 0;
           }
@@ -1212,7 +1872,7 @@
       };
 
       const info = document.createElement('span');
-      info.style.cssText = 'color: #666; font-weight: 500;';
+      info.style.cssText = 'color: var(--muted-text); font-weight: 500;';
       info.textContent = `Page ${currentBatchIndex + 1} of ${totalBatches}`;
 
       const nextBtn = document.createElement('button');
@@ -1250,6 +1910,9 @@
       const titleDiv = document.createElement('div');
       titleDiv.classList.add('title');
       titleDiv.textContent = `Finding ID: ${result._id}`;
+      titleDiv.appendChild(verificationTag(result));
+      if (result.Confirmed) titleDiv.appendChild(createTag('tag-confirmed', 'Confirmed'));
+      if (result.Rejected) titleDiv.appendChild(createTag('tag-rejected', 'Rejected'));
       header.appendChild(titleDiv);
 
       // Action buttons (in header)
@@ -1265,7 +1928,7 @@
         e.stopPropagation();
         result.Rejected = true;
         statusesMap[result._id] = {
-          Verified: result.Verified,
+          Confirmed: result.Confirmed,
           Rejected: true
         };
         storeStatuses();
@@ -1274,22 +1937,22 @@
       });
       actionsDiv.appendChild(rejectBtn);
 
-      const verifyBtn = document.createElement('button');
-      verifyBtn.classList.add('btn', 'btn-secondary');
-      verifyBtn.innerHTML = '<i class="bi bi-check-circle"></i> &nbspVerify';
-      verifyBtn.title = "Mark this finding as verified";
-      verifyBtn.addEventListener('click', (e) => {
+      const confirmBtn = document.createElement('button');
+      confirmBtn.classList.add('btn', 'btn-secondary');
+      confirmBtn.innerHTML = '<i class="bi bi-check-circle"></i> &nbspConfirm';
+      confirmBtn.title = "Mark this finding as a confirmed true positive";
+      confirmBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        result.Verified = true;
+        result.Confirmed = true;
         statusesMap[result._id] = {
-          Verified: true,
+          Confirmed: true,
           Rejected: result.Rejected
         };
         storeStatuses();
         updateStats();
         applyFilters();
       });
-      actionsDiv.appendChild(verifyBtn);
+      actionsDiv.appendChild(confirmBtn);
 
       header.appendChild(actionsDiv);
 
@@ -1303,84 +1966,170 @@
 
       container.appendChild(header);
 
+      const meta = getMeta(result);
+      const fileVal = meta.file && meta.line ? `${meta.file} (line ${meta.line})` : meta.file;
+      const pathVal = meta.link || fileVal || 'N/A';
+      const detVal = result.DetectorName || 'N/A';
+
       // Collapsed summary line
       const summaryLine = document.createElement('div');
       summaryLine.classList.add('summary-line');
-      const linkVal = getNestedValue(result, 'SourceMetadata.Data.Github.link')
-        || getNestedValue(result, 'SourceMetadata.Data.Github.file')
-        || 'N/A';
-      const detVal = result.DetectorName || 'N/A';
-      let rawShort = (result.Raw || '').slice(0, 50);
+      let rawShort = String(result.Raw || result.RawV2 || '').slice(0, 50);
       if (rawShort.length === 50) rawShort += '...';
-      summaryLine.innerHTML = `
-        <strong>Detector:</strong> ${detVal} &mdash;
-        <strong>Path:</strong> ${linkVal} &mdash;
-        <strong>Snippet:</strong> ${rawShort}
-      `;
+      summaryLine.append(
+        createEl('strong', 'Detector:'), ` ${detVal} \u2014 `,
+        createEl('strong', 'Path:'), ` ${pathVal} \u2014 `,
+        createEl('strong', 'Snippet:'), ` ${rawShort}`
+      );
       container.appendChild(summaryLine);
 
       // Full body
       const body = document.createElement('div');
       body.classList.add('result-body');
 
-      // 1) Path
-      body.appendChild(createDetail('Path:', linkVal.startsWith('http')
-        ? `<a href="${linkVal}" target="_blank">${linkVal}</a>` : linkVal));
+      const sourceVal = [meta.sourceType, result.SourceName && `(${result.SourceName})`].filter(Boolean).join(' ');
+      body.appendChild(createDetail('Source:', sourceVal));
+      body.appendChild(createDetail('Repository:', meta.repository));
+      body.appendChild(createDetail('File:', fileVal));
+      body.appendChild(createDetail('Link:', valueNode(meta.link)));
+      body.appendChild(createDetail('Commit:', meta.commit));
+      body.appendChild(createDetail('Date:', meta.timestamp));
+      body.appendChild(createDetail('Author:', meta.email));
+      body.appendChild(createDetail('Detector:', result.DetectorName));
+      body.appendChild(createDetail('Decoder:', result.DecoderName));
+      body.appendChild(createDetail('Uploaded File:', result._uploadedFile));
+      body.appendChild(createDetail('Description:', result.DetectorDescription));
 
-      // 2) File
-      body.appendChild(createDetail('Uploaded File:', result._uploadedFile || 'N/A'));
+      // TruffleHog's own verification result
+      const verification = document.createElement('span');
+      verification.appendChild(verificationTag(result));
+      if (result.VerificationFromCache) verification.append(' (cached)');
+      if (result.VerificationError) {
+        verification.appendChild(createEl('span', String(result.VerificationError), 'verification-error'));
+      }
+      body.appendChild(createDetail('TruffleHog Result:', verification));
 
-      // 3) Repository
-      const repoVal = getNestedValue(result, 'SourceMetadata.Data.Github.repository') || 'N/A';
-      body.appendChild(createDetail('Repository:', repoVal));
+      // Your review status
+      const review = document.createElement('span');
+      if (result.Confirmed) review.appendChild(createTag('tag-confirmed', 'Confirmed'));
+      if (result.Rejected) review.appendChild(createTag('tag-rejected', 'Rejected'));
+      if (!result.Confirmed && !result.Rejected) review.append('Not reviewed');
+      body.appendChild(createDetail('Review:', review));
 
-      // 4) Commit
-      const commitVal = getNestedValue(result, 'SourceMetadata.Data.Github.commit') || 'N/A';
-      body.appendChild(createDetail('Commit:', commitVal));
+      // Source-specific fields not shown above (e.g. visibility, project_id, layer, bucket)
+      const otherSourceEntries = Object.entries(meta.source).filter(([key]) => !meta.usedKeys.has(key));
+      if (otherSourceEntries.length) {
+        body.appendChild(createMetaSection(`Other ${meta.sourceType} Metadata`, otherSourceEntries));
+      }
 
-      // 5) Date
-      const timeVal = getNestedValue(result, 'SourceMetadata.Data.Github.timestamp') || 'N/A';
-      body.appendChild(createDetail('Date:', timeVal));
-
-      // 6) Author
-      const authorVal = getNestedValue(result, 'SourceMetadata.Data.Github.email') || 'N/A';
-      body.appendChild(createDetail('Author:', authorVal));
-
-      // 7) Detector
-      body.appendChild(createDetail('Detector:', detVal));
-
-      // 8) DetectorDescription
-      const descVal = result.DetectorDescription || 'N/A';
-      body.appendChild(createDetail('Description:', descVal));
-
-      // Verified
-      const verifiedTag = result.Verified
-        ? `<i class="bi bi-check-circle-fill"></i> <span class="tag tag-verified">Verified</span>`
-        : `<i class="bi bi-x-circle-fill"></i> <span class="tag tag-unverified">Not Verified</span>`;
-      body.appendChild(createDetail('Verified:', verifiedTag));
-
-      // Rejected
-      const rejectedTag = result.Rejected
-        ? `<i class="bi bi-x-circle-fill"></i> <span class="tag tag-rejected">Rejected</span>`
-        : 'No';
-      body.appendChild(createDetail('Rejected:', rejectedTag));
+      // Any remaining top-level fields: ExtraData, StructuredData, SecretParts, and fields added by newer TruffleHog versions
+      const otherFields = [];
+      Object.keys(result)
+        .filter(key => !CARD_FIELDS.has(key) && !isEmpty(result[key]))
+        .forEach((key) => {
+          const value = result[key];
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            body.appendChild(createMetaSection(key, Object.entries(value)));
+          } else {
+            otherFields.push([key, value]);
+          }
+        });
+      if (otherFields.length) body.appendChild(createMetaSection('Other Fields', otherFields));
 
       // Leaked Info - no expansion needed, scrolling handles it
       const leakedInfoDiv = document.createElement('div');
       leakedInfoDiv.classList.add('leaked-container');
-      const rawVal = result.Raw || 'N/A';
-      leakedInfoDiv.innerHTML = `<strong>Leaked Information:</strong>\n${rawVal}`;
+      leakedInfoDiv.append(createEl('strong', 'Leaked Information:'), `\n${result.Raw || 'N/A'}`);
+      if (result.RawV2 && result.RawV2 !== result.Raw) {
+        leakedInfoDiv.append('\n\n', createEl('strong', 'RawV2:'), `\n${result.RawV2}`);
+      }
       body.appendChild(leakedInfoDiv);
+
+      // Complete original record, exactly as TruffleHog wrote it
+      const { _id, _uploadedFile, Confirmed, Rejected, ...original } = result;
+      const rawJson = createEl('details', null, 'raw-json');
+      rawJson.append(
+        createEl('summary', 'Raw JSON'),
+        createEl('pre', JSON.stringify(original, null, 2), 'json-block')
+      );
+      body.appendChild(rawJson);
 
       container.appendChild(body);
       return container;
     }
 
-    function createDetail(label, valueHTML) {
-      const div = document.createElement('div');
-      div.classList.add('result-detail');
-      div.innerHTML = `<strong>${label}</strong> ${valueHTML}`;
+    // Top-level fields rendered in the card's main grid (plus fields added by this page)
+    const CARD_FIELDS = new Set([
+      'SourceMetadata', 'SourceID', 'SourceType', 'SourceName', 'DetectorType', 'DetectorName',
+      'DetectorDescription', 'DecoderName', 'Verified', 'VerificationError', 'VerificationFromCache',
+      'Raw', 'RawV2', 'Redacted', '_id', '_uploadedFile', 'Confirmed', 'Rejected'
+    ]);
+
+    // 'verified' | 'unverified' | 'unknown' (verification errored, or missing from an old session file)
+    function verificationState(r) {
+      if (r.Verified === true) return 'verified';
+      if (r.Verified === false && !r.VerificationError) return 'unverified';
+      return 'unknown';
+    }
+
+    function verificationTag(r) {
+      const state = verificationState(r);
+      const label = state.charAt(0).toUpperCase() + state.slice(1);
+      const tag = createTag(`tag-${state}`, label);
+      if (state === 'unknown') {
+        tag.title = r.VerificationError ? 'Verification failed with an error' : 'No TruffleHog verification result recorded';
+      }
+      return tag;
+    }
+
+    function createEl(tagName, text, className) {
+      const node = document.createElement(tagName);
+      if (className) node.className = className;
+      if (text !== null && text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function createTag(className, text) {
+      return createEl('span', text, `tag ${className}`);
+    }
+
+    function isEmpty(value) {
+      return value === null || value === undefined || value === '' ||
+        (typeof value === 'object' && Object.keys(value).length === 0);
+    }
+
+    // Text node for plain values, a link for http(s) URLs, formatted JSON for objects.
+    // Never uses innerHTML: secrets and paths come from scanned (untrusted) content.
+    function valueNode(value) {
+      if (isEmpty(value)) return document.createTextNode('N/A');
+      if (typeof value === 'object') return createEl('pre', JSON.stringify(value, null, 2), 'json-block');
+      const text = String(value);
+      if (/^https?:\/\//i.test(text)) {
+        const a = createEl('a', text);
+        a.href = text;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        return a;
+      }
+      return document.createTextNode(text);
+    }
+
+    function createDetail(label, value) {
+      const div = createEl('div', null, 'result-detail');
+      div.append(createEl('strong', label), value instanceof Node ? value : valueNode(value));
       return div;
+    }
+
+    function createMetaSection(title, entries) {
+      const section = createEl('div', null, 'meta-section');
+      const table = createEl('div', null, 'meta-table');
+      entries.forEach(([key, value]) => {
+        const valueSpan = createEl('span', null, 'meta-value');
+        valueSpan.appendChild(valueNode(value));
+        table.append(createEl('span', key, 'meta-key'), valueSpan);
+      });
+      section.append(createEl('strong', title), table);
+      return section;
     }
 
     /**************************************************************
@@ -1395,20 +2144,20 @@
     });
 
     /**************************************************************
-     * MASS UPDATE (Reject or Verify)
+     * MASS UPDATE (Reject or Confirm)
      **************************************************************/
     rejectAllBtn.addEventListener('click', () => {
       massUpdateFiltered({ Reject: true });
     });
-    verifyAllBtn.addEventListener('click', () => {
-      massUpdateFiltered({ Verify: true });
+    confirmAllBtn.addEventListener('click', () => {
+      massUpdateFiltered({ Confirm: true });
     });
     function massUpdateFiltered(action) {
       currentFilteredResults.forEach(r => {
         if (action.Reject) r.Rejected = true;
-        if (action.Verify) r.Verified = true;
+        if (action.Confirm) r.Confirmed = true;
         statusesMap[r._id] = {
-          Verified: r.Verified,
+          Confirmed: r.Confirmed,
           Rejected: r.Rejected
         };
       });
@@ -1418,15 +2167,15 @@
     }
 
     /**************************************************************
-     * EXPORT RESULTS (Verified, Filtered, etc.)
+     * EXPORT RESULTS (Confirmed, Filtered, etc.)
      **************************************************************/
-    exportVerifiedBtn.addEventListener('click', () => {
-      const verifiedOnly = allResults.filter(r => r.Verified);
-      if (!verifiedOnly.length) {
-        alert("No verified results to export!");
+    exportConfirmedBtn.addEventListener('click', () => {
+      const confirmedOnly = allResults.filter(r => r.Confirmed);
+      if (!confirmedOnly.length) {
+        alert("No confirmed results to export!");
         return;
       }
-      downloadJsonFile(verifiedOnly, "verified_findings.json");
+      downloadJsonFile(confirmedOnly, "confirmed_findings.json");
     });
 
     exportFilteredBtn.addEventListener('click', () => {
@@ -1458,7 +2207,7 @@
         alert("No data loaded to save!");
         return;
       }
-      // The entire array includes Verified/Rejected flags
+      // The entire array includes Confirmed/Rejected flags
       downloadJsonFile(allResults, "session_backup.json");
     });
 
@@ -1477,10 +2226,11 @@
      * CLEAR ALL FILTERS
      **************************************************************/
     clearFiltersBtn.addEventListener('click', () => {
-      filterRepository.value = '';
-      filterDetector.value = '';
+      repositoryFilter.reset();
+      detectorFilter.reset();
       filterFileName.value = '';
       filterVerified.value = '';
+      filterReview.value = '';
       filterRegex.value = '';
       filterRegex.classList.remove('active-filter'); // Remove visual feedback
       sortBy.value = '';
@@ -1493,14 +2243,6 @@
 
       applyFilters();
     });
-
-    /**************************************************************
-     * HELPER: getNestedValue
-     **************************************************************/
-    function getNestedValue(obj, path) {
-      if (!obj) return undefined;
-      return path.split('.').reduce((acc, part) => acc && acc[part], obj);
-    }
   </script>
 </body>
 </html>
