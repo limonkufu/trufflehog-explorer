@@ -12,7 +12,7 @@ This fork builds on [GONZOsint/trufflehog-explorer](https://github.com/GONZOsint
 
 - **Flexible input:** Load multiple TruffleHog output files as NDJSON/JSONL, a JSON array, a single finding, or pretty-printed JSON objects. Non-finding log records are skipped; parsing problems are reported.
 - **Repository and detector search:** Type a partial name or abbreviation for case-insensitive fuzzy matching. Suggestions are ranked, and choosing one applies an exact filter.
-- **Combined filters:** Narrow findings by uploaded file, TruffleHog result, your review status, date range, and a regular expression over `Raw`/`RawV2`.
+- **Combined filters:** Narrow findings by uploaded file, TruffleHog result, your review status, date range, a regular expression over `Raw`/`RawV2`, and a regular expression over each finding's link or file path.
 - **Light and dark mode:** The header toggle saves your choice. Until you choose a mode, the viewer follows your system theme, including changes while it is open.
 - **Source-aware details:** View normalized repository, file, author, and date fields alongside additional source metadata, credential fields, and the original JSON record.
 - **Separate review status:** Confirm or reject findings individually or in bulk without overwriting TruffleHog's verification result.
@@ -46,7 +46,7 @@ Type into **Filter by Repository** or **Filter by Detector** to filter immediate
 - Clear the field or choose **All repositories / All detectors** to remove that filter.
 - Use **Clear All Filters** to reset both searches and the other filters.
 
-Repository and detector filters combine with the uploaded-file, result, review, date, and raw-result regex filters. The date range includes the whole end day. Repository fuzzy matching uses the URL path so a shared hostname does not create unrelated abbreviation matches.
+Repository and detector filters combine with the uploaded-file, result, review, date, raw-result regex, and link regex filters. **Search Link / File (Regex)** is a case-insensitive pattern tested against a finding's link and its file path, so `\.env$` keeps findings in `.env` files and `^docs/` keeps findings under a `docs` directory. The date range includes the whole end day. Repository fuzzy matching uses the URL path so a shared hostname does not create unrelated abbreviation matches.
 
 ### Review findings
 

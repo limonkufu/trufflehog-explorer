@@ -912,6 +912,15 @@
             <input type="text" id="filterRegex" placeholder="Enter regex pattern..." />
           </div>
 
+          <!-- LINK / FILE REGEX Search -->
+          <div>
+            <label for="filterLink">
+              Search Link / File (Regex):
+              <span class="info-icon" title="Use regex patterns to match the finding's Link or File path. E.g., \.env$ or docs/.*\.md">?</span>
+            </label>
+            <input type="text" id="filterLink" placeholder="Enter regex pattern..." />
+          </div>
+
           <!-- Sort -->
           <div>
             <label for="sortBy">Sort By:</label>
@@ -1136,6 +1145,7 @@
     const filterVerified = document.getElementById('filterVerified');
     const filterReview = document.getElementById('filterReview');
     const filterRegex = document.getElementById('filterRegex');
+    const filterLink = document.getElementById('filterLink');
     const sortBy = document.getElementById('sortBy');
 
     // Stats elements
@@ -1725,20 +1735,30 @@
     [filterFileName, filterVerified, filterReview, sortBy]
       .forEach(el => el.addEventListener('change', applyFilters));
 
-    // Add regex filter with debouncing and visual feedback
-    let regexTimeout;
-    filterRegex.addEventListener('input', () => {
-      clearTimeout(regexTimeout);
-      regexTimeout = setTimeout(() => {
-        applyFilters();
-        // Add visual feedback if regex is active
-        if (filterRegex.value.trim()) {
-          filterRegex.classList.add('active-filter');
-        } else {
-          filterRegex.classList.remove('active-filter');
-        }
-      }, 300); // Debounce 300ms
-    });
+    // Regex filters: debounce input and highlight the field while a pattern is active
+    function attachRegexFilter(input) {
+      let timeout;
+      input.addEventListener('input', () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          applyFilters();
+          input.classList.toggle('active-filter', !!input.value.trim());
+        }, 300); // Debounce 300ms
+      });
+    }
+    attachRegexFilter(filterRegex);
+    attachRegexFilter(filterLink);
+
+    // Compile a user-supplied pattern; an invalid or empty pattern disables that filter
+    function compileRegex(value) {
+      if (!value) return null;
+      try {
+        return new RegExp(value, 'i'); // Case-insensitive by default
+      } catch (e) {
+        console.warn('Invalid regex pattern:', e);
+        return null;
+      }
+    }
 
     function applyFilters() {
       const matchingRepos = repositoryFilter.matchedValues();
@@ -1746,18 +1766,8 @@
       const fileVal = filterFileName.value;
       const verVal = filterVerified.value;
       const reviewVal = filterReview.value;
-      const regexVal = filterRegex.value.trim();
-
-      // Compile regex if provided
-      let regexPattern = null;
-      if (regexVal) {
-        try {
-          regexPattern = new RegExp(regexVal, 'i'); // Case-insensitive by default
-        } catch (e) {
-          console.warn('Invalid regex pattern:', e);
-          regexPattern = null;
-        }
-      }
+      const regexPattern = compileRegex(filterRegex.value.trim());
+      const linkPattern = compileRegex(filterLink.value.trim());
 
       let [startTime, endTime] = [null, null];
       if (selectedDateRange.length === 2 && selectedDateRange[0] && selectedDateRange[1]) {
@@ -1792,7 +1802,11 @@
         const regexMatch = !regexPattern ||
           [r.Raw, r.RawV2].some(v => typeof v === 'string' && regexPattern.test(v));
 
-        return verifiedMatch && reviewMatch && repoMatch && detMatch && fileMatch && dateMatch && regexMatch;
+        // Regex match on the link, and on the file path so sources without links still match
+        const linkMatch = !linkPattern ||
+          [meta.link, meta.file].some(v => v && linkPattern.test(v));
+
+        return verifiedMatch && reviewMatch && repoMatch && detMatch && fileMatch && dateMatch && regexMatch && linkMatch;
       });
 
       // Sort results
@@ -2234,6 +2248,8 @@
       filterReview.value = '';
       filterRegex.value = '';
       filterRegex.classList.remove('active-filter'); // Remove visual feedback
+      filterLink.value = '';
+      filterLink.classList.remove('active-filter');
       sortBy.value = '';
 
       selectedDateRange = [null, null];
